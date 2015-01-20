@@ -39,16 +39,25 @@ class Grid
   end
 
   def block_unit(selected)
-    block_rows = [['A', 'B', 'C'],['D', 'E', 'F'],['G', 'H', 'I']]
-    block_cols = [[1, 2, 3],[4, 5, 6],[7, 8, 9]]
-    row = block_rows.index { |br| br.include? selected.location[0] }
-    col = block_cols.index { |bc| bc.include? selected.location[1] }
-    block = combine(block_rows[row], block_cols[col])
+    block = combine(block_row(selected), block_col(selected))
     squares.select { |square| block.include? square.location }
   end
 
-  def unit_lists
-    { v: vertical_unit, h: horizontal_unit, b: block_unit }
+  def block_row(selected)
+    block_rows = [['A', 'B', 'C'],['D', 'E', 'F'],['G', 'H', 'I']]
+    block_rows.find { |br| br.include? selected.location[0] }
+  end
+
+  def block_col(selected)
+    block_cols = [[1, 2, 3],[4, 5, 6],[7, 8, 9]]
+    block_cols.find { |bc| bc.include? selected.location[1] }
+  end
+
+  def unit_lists(selected)
+    { v: vertical_unit(selected), 
+      h: horizontal_unit(selected), 
+      b: block_unit(selected)
+    }
   end
 end
 
@@ -60,20 +69,5 @@ class Square
     @location = location
     @value    = value
   end
-
 end
 
-TEST_GRID = "
-          Grid 01
-          003020600
-          900305001
-          001806400
-          008102900
-          700000008
-          006708200
-          002609500
-          800203009
-          005010300
-"
-a = Grid.new(TEST_GRID)
-puts a.block_unit(a.squares.last)
