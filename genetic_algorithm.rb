@@ -34,9 +34,7 @@ module Ai4r
     #     - Chromosome
     #     - Population
     class GeneticSearch
-
       attr_accessor :population
-
 
       def initialize(initial_population_size, generations)
         @population_size = initial_population_size
@@ -145,7 +143,6 @@ module Ai4r
           return chromosome if local_acum >= select_random_target
         end
       end
-
     end
 
     # A Chromosome is a representation of an individual solution for a specific 
@@ -188,11 +185,18 @@ module Ai4r
       # Calling the mutate function will "probably" slightly change a chromosome
       # randomly. 
       def self.mutate(chromosome)
-        if rand < 0.3
-          intelligent_swap(chromosome)
-        else
-          random_swap(chromosome)
-        end 
+        case a = rand(10)
+        when 0..5; intelligent_swap(chromosome)
+        when 5..7; random_swap(chromosome)
+        else       random_change(chromosome) 
+        end
+        @fitness = nil
+      end
+
+      def self.random_change(chromosome)
+        chromosome.grid.squares.sample.value = (0..9).to_a.sample
+        chromosome.grid.squares.sample.value = (0..9).to_a.sample
+        chromosome.data = chromosome.grid.chromosome 
       end
 
       def self.intelligent_swap(chromosome)
@@ -203,7 +207,6 @@ module Ai4r
           require 'pry'; binding.pry if from.values.sample.nil? || to.keys.nil?
           from.values.sample.sample.value = to.keys.sample
           chromosome.data = chromosome.grid.chromosome
-          @fitness = nil
         end
       end
 
@@ -213,7 +216,6 @@ module Ai4r
         to.value = from.value
         chromosome.grid.find_and_replace(to)
         chromosome.data = chromosome.grid.chromosome
-        @fitness = nil
       end
 
       # Reproduction method is used to combine two chromosomes (solutions) into 
