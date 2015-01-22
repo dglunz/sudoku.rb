@@ -112,7 +112,7 @@ module Ai4r
           offsprings << Chromosome.reproduce(selected_to_breed[i], selected_to_breed[i+1])
         end
         @population.each do |individual|
-          Chromosome.mutate(individual) if rand < 0.3
+          Chromosome.mutate(individual) if rand < 0.02
         end
         return offsprings.flatten
       end
@@ -187,12 +187,15 @@ module Ai4r
       # 
       # Calling the mutate function will "probably" slightly change a chromosome
       # randomly. 
-      #
-      # This implementation of "mutation" will (probably) reverse the 
-      # order of 2 consecutive randome nodes 
-      # (e.g. from [ 0, 1, 2, 4] to [0, 2, 1, 4]) if:
-      #     ((1 - chromosome.normalized_fitness) * 0.4)
       def self.mutate(chromosome)
+        if rand < 0.3
+          intelligent_swap(chromosome)
+        else
+          random_swap(chromosome)
+        end 
+      end
+
+      def self.intelligent_swap(chromosome)
         peers     = chromosome.grid.squares.group_by(&:value)
         from      = peers.select { |k, v| v.count > 9 }
         to        = peers.select { |k, v| v.count < 9 }
@@ -202,6 +205,15 @@ module Ai4r
           chromosome.data = chromosome.grid.chromosome
           @fitness = nil
         end
+      end
+
+      def self.random_swap(chromosome)
+        from = chromosome.grid.squares.sample
+        to   = chromosome.grid.squares.sample
+        to.value = from.value
+        chromosome.grid.find_and_replace(to)
+        chromosome.data = chromosome.grid.chromosome
+        @fitness = nil
       end
 
       # Reproduction method is used to combine two chromosomes (solutions) into 
@@ -253,7 +265,5 @@ module Ai4r
         @@puzzle = puzzle
       end
     end
-
   end
-
 end
