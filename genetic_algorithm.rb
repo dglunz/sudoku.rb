@@ -63,7 +63,6 @@ module Ai4r
         return best_chromosome
       end
 
-
       def generate_initial_population
        @population = []
        @population_size.times do
@@ -78,6 +77,7 @@ module Ai4r
       # There are several generic selection algorithms, such as 
       # tournament selection and roulette wheel selection.        
       #
+      # Sudoku is using a binary tournament selection to choose breeders
       def selection
         possible_parents = @population_size
         breeders = []
@@ -89,7 +89,7 @@ module Ai4r
 
       def tournament_selection(pop, possible_parents)
         best = nil
-        possible_parents.times do
+        (possible_parents/10).times do
           contestant = pop[rand(@population_size)]
           if best == nil || contestant.fitness > best.fitness
             best = contestant
@@ -114,15 +114,16 @@ module Ai4r
         @population.each do |individual|
           Chromosome.mutate(individual)
         end
-        return offsprings
+        return offsprings.flatten
       end
 
       # Replace worst ranked part of population with offspring
+      # Use a mild form of elitism, only keep 3 of the best individuals
       def replace_worst_ranked(offsprings)
-        size = offsprings.length-10
+        size = offsprings.length-3
         pop = @population.sort_by(&:fitness).reverse
         @population = pop[0..(@population_size - size-1)] + offsprings[0..size-1]
-        puts "Elitist survivors #{@population[0..10].map(&:fitness)}"
+        puts "Elitist survivors #{@population[0..2].map(&:fitness)}"
       end
 
       # Select the best chromosome in the population
@@ -152,12 +153,14 @@ module Ai4r
     # particular problem, along with its fitness, mutate, reproduce, and seed 
     # methods.
     class Chromosome
-
+      attr_reader :grid
       attr_accessor :data
       attr_accessor :normalized_fitness
 
       def initialize(data)
         @data = data
+        @grid = Grid.new(@@puzzle.puzzle.join)
+        @grid.fill_search_squares(data.join)
       end
 
       # The fitness method quantifies the optimality of a solution 
@@ -169,8 +172,7 @@ module Ai4r
       # producing a new generation that will (hopefully) be even better.
       def fitness
         return @fitness if @fitness
-        @@grid.fill_search_squares(@data)
-        @fitness = @@grid.fitness
+        @fitness = @grid.fitness
         return @fitness
       end
 
@@ -206,33 +208,27 @@ module Ai4r
       # "Cut and splice", edge recombination, and more. 
       # 
       # The method is usually dependant of the problem domain.
+      #
+      # For sudoku, we'll swap a randomly selected subset(row, col, block).
+      # Both resulting boards are introducted back into the population.
       def self.reproduce(a, b)
-        data_size = @@grid.empty_squares.length - 1
-        available = []
-        (data_size/9).times { available << (1..9).to_a }
-        1.upto(data_size%9) { |n| available << (1..9).to_a.at(n) }
-        available.flatten!
-        token = a.data[0]
-        spawn = [token]
-        available.delete(token)
-        while available.length > 0 do 
-          #Select next
-          if a.data.index(token) == nil || b.data.index(token) == nil
-            next_token = available[rand(available.length)]
-          elsif token != b.data.last && available.include?(b.data[b.data.index(token)+1])
-            next_token = b.data[b.data.index(token)+1]
-          elsif token != a.data.last && available.include?(a.data[a.data.index(token)+1])
-            next_token = a.data[a.data.index(token)+1] 
-          else
-            next_token = available[rand(available.length)]
-          end
-          #Add to spawn
-          token = next_token
-          available.delete(token)
-          spawn << next_token
-          a, b = b, a if rand < 0.4
+        random_square = [a.grid.rows.sample, a.grid.cols.sample]
+        random_unit   = [:vertical_unit, :horizontal_unit, :block_unit].sample
+        a_unit        = a.grid.send(random_unit, random_square)
+        b_unit        = b.grid.send(random_unit, random_square)
+
+        a_unit.each do |square|
+          b.grid.find_and_replace(square)
         end
-        return Chromosome.new(spawn)
+
+        b_unit.each do |square|
+          a.grid.find_and_replace(square)
+        end
+
+        a_spawn = a.grid.chromosome
+        b_spawn = b.grid.chromosome
+
+        return Chromosome.new(a_spawn), Chromosome.new(b_spawn)
       end
 
       # Initializes an individual solution (chromosome) for the initial 
@@ -240,9 +236,8 @@ module Ai4r
       # use some problem domain knowledge, to generate a 
       # (probably) better initial solution.
       def self.seed
-        data_size = @@grid.empty_squares.length 
+        data_size = @@puzzle.mutatable_squares.length 
         available = []
-
         0.upto(data_size-1) { |n| available << (1..9).to_a.sample }
         seed = []
         while available.length > 0 do 
@@ -252,8 +247,8 @@ module Ai4r
         return Chromosome.new(seed)
       end
 
-      def self.grid(grid)
-        @@grid = grid
+      def self.puzzle(puzzle)
+        @@puzzle = puzzle
       end
     end
 

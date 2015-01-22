@@ -13,8 +13,19 @@ TEST_GRID = "
     800203009
     005010300
 "
-
-TEST_SOLVED = "
+TEST_GRID_SOLVED = "
+    Grid 01
+    003020600
+    900305001
+    001806400
+    008102900
+    700000008
+    006708200
+    002609500
+    800203009
+    005010300
+"
+TEST_DIFF_SOLVED = "
     826594317
     715638942
     394721865
@@ -26,9 +37,9 @@ TEST_SOLVED = "
     679385421
 "
 
-grid = Grid.new(TEST_GRID)
+puzzle = Grid.new(TEST_GRID)
 
-Ai4r::GeneticAlgorithm::Chromosome.grid(grid)
+Ai4r::GeneticAlgorithm::Chromosome.puzzle(puzzle)
 
 puts "Example of randomly filled in values"
 5.times do

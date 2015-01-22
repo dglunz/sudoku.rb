@@ -1,5 +1,5 @@
 class Grid
-  attr_reader :squares, :puzzle
+  attr_reader :squares, :puzzle, :rows, :cols
 
   def initialize(puzzle)
     @rows = ('A'..'I').to_a
@@ -20,7 +20,7 @@ class Grid
   end
 
   def clean(puzzle)
-    puzzle.scan(/\d{9}/).join.chars.map(&:to_i)
+    puzzle.to_s.scan(/\d{9}/).join.chars.map(&:to_i)
   end
 
   def grid_layout
@@ -33,6 +33,11 @@ class Grid
 
   def create_squares
     grid_layout.map { |location| Square.new(location) }
+  end
+
+  def find_and_replace(replacement)
+    square = squares.find { |square| square.location == replacement.location }
+    square.value = replacement.value
   end
 
   def fill_given_squares(puzzle)
@@ -48,14 +53,18 @@ class Grid
     count = data.length-1
     squares.each do |square, index|
       if !square.protected?
-        square.value = data[count] 
+        square.value = data[count].to_i
         count -= 1
       end
     end
   end
 
-  def empty_squares
+  def mutatable_squares
     squares.reject(&:protected?)
+  end
+
+  def chromosome
+    mutatable_squares.map(&:value).reverse
   end
 
   def vertical_unit(location)
