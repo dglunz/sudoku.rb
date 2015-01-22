@@ -57,6 +57,7 @@ module Ai4r
           selected_to_breed = selection                #Evaluates current population 
           offsprings = reproduction selected_to_breed  #Generate the population for this new generation
           replace_worst_ranked offsprings
+          @generation += 1
         end
         return best_chromosome
       end
@@ -121,7 +122,9 @@ module Ai4r
         size = offsprings.length-3
         pop = @population.sort_by(&:fitness).reverse
         @population = pop[0..(@population_size - size-1)] + offsprings[0..size-1]
-        puts "Elitist survivors #{@population[0..2].map(&:fitness)}"
+        print "\e[2J\e[f" 
+        puts "Generation: #{@generation}\nElitist survivor: #{@population.first.fitness}\n"
+        @population.first.grid.print
       end
 
       # Select the best chromosome in the population
@@ -194,8 +197,8 @@ module Ai4r
       end
 
       def self.random_change(chromosome)
-        chromosome.grid.squares.sample.value = (0..9).to_a.sample
-        chromosome.grid.squares.sample.value = (0..9).to_a.sample
+        chromosome.grid.squares.sample.value = (1..9).to_a.sample
+        chromosome.grid.squares.sample.value = (1..9).to_a.sample
         chromosome.data = chromosome.grid.chromosome 
       end
 

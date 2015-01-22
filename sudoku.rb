@@ -106,16 +106,21 @@ class Grid
       b: block_unit(selected)
     }
   end
+  
+  def print
+    values = squares.map(&:value)
+    board_string_thingy = "╔═══════════╦═══════════╦═══════════╗\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n╠═══════════╬═══════════╬═══════════╣\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n╠═══════════╬═══════════╬═══════════╣\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n╚═══════════╩═══════════╩═══════════╝"
+    puts board_string_thingy.gsub("0").with_index { |spot, index| values[index] }
+  end
 end
 
 class Square
-  attr_reader :location, :protected
+  attr_reader :location
   attr_accessor :value
 
   def initialize(location, value=0)
     @location  = location
     @value     = value
-    @protected = false
   end
 
   def protect!
@@ -123,6 +128,6 @@ class Square
   end
 
   def protected?
-    protected
+    @protected
   end
 end
