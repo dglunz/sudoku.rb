@@ -5,7 +5,18 @@ class Grid
     @rows = ('A'..'I').to_a
     @cols = (1..9).to_a
     @puzzle = clean(puzzle)
-    @squares = fill_squares(@puzzle)
+    @squares = fill_given_squares(@puzzle)
+  end
+
+  def fitness
+    total = 0
+    units.each do |unit|
+      unit.each do |set|
+        set_values = set.map(&:value)
+        total += (set_values.uniq.count / 9.0)
+      end
+    end
+    total / 27.0
   end
 
   def clean(puzzle)
@@ -24,33 +35,60 @@ class Grid
     grid_layout.map { |location| Square.new(location) }
   end
 
-  def fill_squares(puzzle)
+  def fill_given_squares(puzzle)
     create_squares.each_with_index do |square, index|
-      square.value = puzzle[index] if puzzle[index] != 0
+      if puzzle[index] != 0
+        square.protect!
+        square.value = puzzle[index]     
+      end
     end
   end
 
-  def vertical_unit(selected)
-    squares.select { |square| square.location[0] == selected.location[0] }
+  def fill_search_squares(data)
+    count = data.length-1
+    squares.each do |square, index|
+      if !square.protected?
+        square.value = data[count] 
+        count -= 1
+      end
+    end
   end
 
-  def horizontal_unit(selected)
-    squares.select { |square| square.location[1] == selected.location[1] }
+  def empty_squares
+    squares.reject(&:protected?)
   end
 
-  def block_unit(selected)
-    block = combine(block_row(selected), block_col(selected))
+  def vertical_unit(location)
+    squares.select { |square| square.location[0] == location[0] }
+  end
+
+  def horizontal_unit(location)
+    squares.select { |square| square.location[1] == location[1] }
+  end
+
+  def block_unit(location)
+    block = combine(block_row(location), block_col(location))
     squares.select { |square| block.include? square.location }
   end
 
-  def block_row(selected)
+  def block_row(location)
     block_rows = [['A', 'B', 'C'],['D', 'E', 'F'],['G', 'H', 'I']]
-    block_rows.find { |br| br.include? selected.location[0] }
+    block_rows.find { |br| br.include? location[0] }
   end
 
-  def block_col(selected)
+  def block_col(location)
     block_cols = [[1, 2, 3],[4, 5, 6],[7, 8, 9]]
-    block_cols.find { |bc| bc.include? selected.location[1] }
+    block_cols.find { |bc| bc.include? location[1] }
+  end
+
+  def units
+    horizontal = @rows.zip(Array.new(9,1))
+    vertical   = Array.new(9,"A").zip(@cols)
+    block      = combine(["A", "D", "G"], [1, 4, 7])
+    horizontals = horizontal.map { |h| vertical_unit(h) }
+    verticals   = vertical.map   { |v| horizontal_unit(v)   }
+    blocks      = block.map      { |b| block_unit(b)      }
+    [horizontals, verticals, blocks] 
   end
 
   def unit_lists(selected)
@@ -62,12 +100,21 @@ class Grid
 end
 
 class Square
-  attr_reader :location
+  attr_reader :location, :protected
   attr_accessor :value
 
   def initialize(location, value=0)
-    @location = location
-    @value    = value
+    @location  = location
+    @value     = value
+    @protected = false
+  end
+
+  def protect!
+    @protected = true
+  end
+
+  def protected?
+    protected
   end
 end
 
