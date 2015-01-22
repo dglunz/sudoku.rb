@@ -76,35 +76,26 @@ module Ai4r
       # Selection is the stage of a genetic algorithm in which individual 
       # genomes are chosen from a population for later breeding. 
       # There are several generic selection algorithms, such as 
-      # tournament selection and roulette wheel selection. We implemented the
-      # latest.
-      # 
-      # Steps:
-      # 
-      # 1. The fitness function is evaluated for each individual, providing fitness values
-      # 2. The population is sorted by descending fitness values.
-      # 3. The fitness values ar then normalized. (Highest fitness gets 1, lowest fitness gets 0). The normalized value is stored in the "normalized_fitness" attribute of the chromosomes.
-      # 4. A random number R is chosen. R is between 0 and the accumulated normalized value (all the normalized fitness values added togheter).
-      # 5. The selected individual is the first one whose accumulated normalized value (its is normalized value plus the normalized values of the chromosomes prior it) greater than R.
-      # 6. We repeat steps 4 and 5, 2/3 times the population size.    
+      # tournament selection and roulette wheel selection.       # 
+      #
       def selection
-        @population.sort! { |a, b| b.fitness <=> a.fitness}
-        best_fitness = @population[0].fitness
-        worst_fitness = @population.last.fitness
-        acum_fitness = 0
-        if best_fitness-worst_fitness > 0
-        @population.each do |chromosome| 
-          chromosome.normalized_fitness = (chromosome.fitness - worst_fitness)/(best_fitness-worst_fitness)
-          acum_fitness += chromosome.normalized_fitness
+        possible_parents = @population_size
+        breeders = []
+        possible_parents.times do
+          breeders << tournament_selection(@population, possible_parents)
         end
-        else
-          @population.each { |chromosome| chromosome.normalized_fitness = 1}  
+        breeders
+      end
+
+      def tournament_selection(pop, possible_parents)
+        best = nil
+        possible_parents.times do
+          contestant = pop[rand(@population_size)]
+          if best == nil || contestant.fitness > best.fitness
+            best = contestant
+          end
         end
-        selected_to_breed = []
-        ((2*@population_size)/3).times do 
-          selected_to_breed << select_random_individual(acum_fitness)
-        end
-        selected_to_breed
+        return best
       end
 
       # We combine each pair of selected chromosome using the method 
@@ -134,7 +125,7 @@ module Ai4r
 
       # Select the best chromosome in the population
       def best_chromosome
-        the_best = @population[0]
+        the_best = @population.first
         @population.each do |chromosome|
           the_best = chromosome if chromosome.fitness > the_best.fitness
         end
@@ -214,8 +205,6 @@ module Ai4r
       # "Cut and splice", edge recombination, and more. 
       # 
       # The method is usually dependant of the problem domain.
-      # In this case, we have implemented edge recombination, wich is the 
-      # most used reproduction algorithm for the Travelling salesman problem.
       def self.reproduce(a, b)
         data_size = @@grid.empty_squares.length - 1
         available = []

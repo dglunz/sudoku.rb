@@ -14,6 +14,18 @@ TEST_GRID = "
     005010300
 "
 
+TEST_SOLVED = "
+    826594317
+    715638942
+    394721865
+    163459278
+    948267153
+    257813694
+    531942786
+    482176539
+    679385421
+"
+
 grid = Grid.new(TEST_GRID)
 
 Ai4r::GeneticAlgorithm::Chromosome.grid(grid)
@@ -26,7 +38,7 @@ end
 
 puts "Beginning genetic search..."
 
-search = Ai4r::GeneticAlgorithm::GeneticSearch.new(100, 1000000)
+search = Ai4r::GeneticAlgorithm::GeneticSearch.new(100, 1000)
 result = search.run
 
 puts "Fitness lvl: #{result.fitness} \n #{result.data}"

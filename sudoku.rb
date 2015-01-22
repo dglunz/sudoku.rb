@@ -117,4 +117,3 @@ class Square
     protected
   end
 end
-
