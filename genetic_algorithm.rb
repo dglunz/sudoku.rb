@@ -112,7 +112,7 @@ module Ai4r
           offsprings << Chromosome.reproduce(selected_to_breed[i], selected_to_breed[i+1])
         end
         @population.each do |individual|
-          Chromosome.mutate(individual)
+          Chromosome.mutate(individual) if rand < 0.3
         end
         return offsprings.flatten
       end
@@ -193,11 +193,13 @@ module Ai4r
       # (e.g. from [ 0, 1, 2, 4] to [0, 2, 1, 4]) if:
       #     ((1 - chromosome.normalized_fitness) * 0.4)
       def self.mutate(chromosome)
-        if chromosome.normalized_fitness && rand < ((1 - chromosome.normalized_fitness) * 0.3)
-          data = chromosome.data
-          index = rand(data.length-1)
-          data[index], data[index+1] = data[index+1], data[index]
-          chromosome.data = data
+        peers     = chromosome.grid.squares.group_by(&:value)
+        from      = peers.select { |k, v| v.count > 9 }
+        to        = peers.select { |k, v| v.count < 9 }
+        if !from.empty? && !to.empty?
+          require 'pry'; binding.pry if from.values.sample.nil? || to.keys.nil?
+          from.values.sample.sample.value = to.keys.sample
+          chromosome.data = chromosome.grid.chromosome
           @fitness = nil
         end
       end
