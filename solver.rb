@@ -38,7 +38,7 @@ end
 
 puts "Beginning genetic search..."
 
-search = Ai4r::GeneticAlgorithm::GeneticSearch.new(100, 1000)
+search = Ai4r::GeneticAlgorithm::GeneticSearch.new(100, 100)
 result = search.run
 
 puts "Fitness lvl: #{result.fitness} \n #{result.data}"

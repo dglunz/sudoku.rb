@@ -76,7 +76,7 @@ module Ai4r
       # Selection is the stage of a genetic algorithm in which individual 
       # genomes are chosen from a population for later breeding. 
       # There are several generic selection algorithms, such as 
-      # tournament selection and roulette wheel selection.       # 
+      # tournament selection and roulette wheel selection.        
       #
       def selection
         possible_parents = @population_size
@@ -108,8 +108,8 @@ module Ai4r
       #     rand < ((1 - chromosome.normalized_fitness) * 0.4)
       def reproduction(selected_to_breed)
         offsprings = []
-        0.upto(selected_to_breed.length/2-1) do |i|
-          offsprings << Chromosome.reproduce(selected_to_breed[2*i], selected_to_breed[2*i+1])
+        0.upto(selected_to_breed.length-2) do |i|
+          offsprings << Chromosome.reproduce(selected_to_breed[i], selected_to_breed[i+1])
         end
         @population.each do |individual|
           Chromosome.mutate(individual)
@@ -119,8 +119,10 @@ module Ai4r
 
       # Replace worst ranked part of population with offspring
       def replace_worst_ranked(offsprings)
-        size = offsprings.length
-        @population = @population [0..((-1*size)-1)] + offsprings
+        size = offsprings.length-10
+        pop = @population.sort_by(&:fitness).reverse
+        @population = pop[0..(@population_size - size-1)] + offsprings[0..size-1]
+        puts "Elitist survivors #{@population[0..10].map(&:fitness)}"
       end
 
       # Select the best chromosome in the population
@@ -169,7 +171,6 @@ module Ai4r
         return @fitness if @fitness
         @@grid.fill_search_squares(@data)
         @fitness = @@grid.fitness
-        puts @fitness
         return @fitness
       end
 
