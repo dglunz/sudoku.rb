@@ -20,7 +20,8 @@ module GeneticAlgorithm
     #     2. Evaluate the fitness of each individual in the population
     #     3. Repeat
     #           1. Select best-ranking individuals to reproduce
-    #           2. Breed new generation through crossover and mutation (genetic operations) and give birth to offspring
+    #           2. Breed new generation through crossover and mutation 
+    #              (genetic operations) and give birth to offspring
     #           3. Evaluate the individual fitnesses of the offspring
     #           4. Replace worst ranked part of population with offspring
     #     4. Until termination    
@@ -66,7 +67,7 @@ module GeneticAlgorithm
     # against one another and the top survivors are selected to become breeders
     def tournament_selection(pop, possible_parents)
       best = nil
-      (possible_parents/30).times do
+      (possible_parents/40).times do
         contestant = pop[rand(@population_size)]
         if best == nil || contestant.fitness > best.fitness
           best = contestant
@@ -86,7 +87,7 @@ module GeneticAlgorithm
         offsprings << Chromosome.reproduce(selected_to_breed[i], selected_to_breed[i+1])
       end
       @population.each do |individual|
-        Chromosome.mutate(individual) if rand < 0.4
+        Chromosome.mutate(individual) if rand < 0.2
       end
       return offsprings.flatten
     end
@@ -96,7 +97,8 @@ module GeneticAlgorithm
     def replace_worst_ranked(offsprings)
       size = offsprings.length-3
       pop = @population.sort_by(&:fitness).reverse
-      @population = pop[0..(@population_size - size-1)] + offsprings[0..size-1]
+      @population = []
+      @population = pop[0..2] + offsprings[0..@population_size-4]
       display_board
     end
 
@@ -104,7 +106,7 @@ module GeneticAlgorithm
     def display_board
       print "\e[2J\e[f" 
       puts "Generation: #{@generation}\nElitist survivor: #{@population.first.fitness}\n"
-      @population.last.grid.print
+      puts @population.last.grid.print
     end
 
     # Select the best chromosome in the population
@@ -159,8 +161,8 @@ module GeneticAlgorithm
     # There are 3 different mutation methods, that occur at varying probabilities
     def self.mutate(chromosome)
       case a = rand(10)
-      when 0..2; intelligent_swap(chromosome)
-      when 2..4; random_swap(chromosome)
+      when 0..3; intelligent_swap(chromosome)
+      when 3..6; random_swap(chromosome)
       else       random_change(chromosome) 
       end
       @fitness = nil

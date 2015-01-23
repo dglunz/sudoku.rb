@@ -30,15 +30,9 @@ puzzle = Grid.new(TEST_GRID)
 
 GeneticAlgorithm::Chromosome.puzzle(puzzle)
 
-puts "Example of randomly filled in values"
-5.times do
-  chromo = GeneticAlgorithm::Chromosome.seed
-  puts "#{chromo.data}"
-end
-
 t = Time.new
 puts "Beginning genetic search... #{t}"
-search = GeneticAlgorithm::GeneticSearch.new(100, 10000)
+search = GeneticAlgorithm::GeneticSearch.new(100, 1000)
 result = search.run
 elapsed = Time.now - t
 puts "Fitness lvl: #{result.fitness} \n #{result.data} \n Time Elapsed: #{elapsed}"
