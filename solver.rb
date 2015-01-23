@@ -49,7 +49,7 @@ end
 
 t = Time.new
 puts "Beginning genetic search... #{t}"
-search = Ai4r::GeneticAlgorithm::GeneticSearch.new(100, 1000)
+search = Ai4r::GeneticAlgorithm::GeneticSearch.new(100, 10000)
 result = search.run
 elapsed = Time.now - t
 puts "Fitness lvl: #{result.fitness} \n #{result.data} \n Time Elapsed: #{elapsed}"

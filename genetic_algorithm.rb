@@ -111,7 +111,7 @@ module Ai4r
           offsprings << Chromosome.reproduce(selected_to_breed[i], selected_to_breed[i+1])
         end
         @population.each do |individual|
-          Chromosome.mutate(individual) if rand < 0.02
+          Chromosome.mutate(individual) if rand < 0.08
         end
         return offsprings.flatten
       end
@@ -124,7 +124,7 @@ module Ai4r
         @population = pop[0..(@population_size - size-1)] + offsprings[0..size-1]
         print "\e[2J\e[f" 
         puts "Generation: #{@generation}\nElitist survivor: #{@population.first.fitness}\n"
-        @population.first.grid.print
+        @population.last.grid.print
       end
 
       # Select the best chromosome in the population
@@ -189,8 +189,8 @@ module Ai4r
       # randomly. 
       def self.mutate(chromosome)
         case a = rand(10)
-        when 0..5; intelligent_swap(chromosome)
-        when 5..7; random_swap(chromosome)
+        when 0..2; intelligent_swap(chromosome)
+        when 2..4; random_swap(chromosome)
         else       random_change(chromosome) 
         end
         @fitness = nil

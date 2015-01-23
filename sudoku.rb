@@ -108,9 +108,17 @@ class Grid
   end
   
   def print
-    values = squares.map(&:value)
+    cache_squares = squares
     board_string_thingy = "╔═══════════╦═══════════╦═══════════╗\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n╠═══════════╬═══════════╬═══════════╣\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n╠═══════════╬═══════════╬═══════════╣\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n╚═══════════╩═══════════╩═══════════╝"
-    puts board_string_thingy.gsub("0").with_index { |spot, index| values[index] }
+    board_string_thingy.gsub!("0").with_index do |spot, index|
+      color = correct?(cache_squares[index]) ? 32 : 31
+      "\e[#{color}m#{cache_squares[index].value}\e[0m"
+    end
+    puts board_string_thingy
+  end
+
+  def correct?(square)
+    (vertical_unit(square.location) + horizontal_unit(square.location) + block_unit(square.location)).flatten.map(&:value).count(square.value) == 3
   end
 end
 
