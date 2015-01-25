@@ -10,13 +10,20 @@ class Grid
 
   def fitness
     total = 0
+    units = [horizontal, vertical, block]
     units.each do |unit|
-      unit.each do |set|
+      total += specific_fitness(unit)
+    end
+    total / 3.0
+  end
+
+  def specific_fitness(unit)
+    total = 0
+    unit.each do |set|
         set_values = set.map(&:value)
         total += (set_values.uniq.count / 9.0)
-      end
     end
-    total / 27.0
+    total / 9.0
   end
 
   def clean(puzzle)
@@ -90,23 +97,23 @@ class Grid
     block_cols.find { |bc| bc.include? location[1] }
   end
 
-  def units
+  def horizontal
     horizontal = @rows.zip(Array.new(9,1))
-    vertical   = Array.new(9,"A").zip(@cols)
-    block      = combine(["A", "D", "G"], [1, 4, 7])
-    horizontals = horizontal.map { |h| vertical_unit(h) }
-    verticals   = vertical.map   { |v| horizontal_unit(v)   }
-    blocks      = block.map      { |b| block_unit(b)      }
-    [horizontals, verticals, blocks] 
+    vertical = Array.new(9,"A").zip(@cols)
+    horizontal.map { |h| vertical_unit(h) }
   end
 
-  def unit_lists(selected)
-    { v: vertical_unit(selected), 
-      h: horizontal_unit(selected), 
-      b: block_unit(selected)
-    }
+  def vertical
+    vertical = Array.new(9,"A").zip(@cols)
+    horizontal = @rows.zip(Array.new(9,1))
+    vertical.map { |v| horizontal_unit(v) }
   end
-  
+
+  def block
+    block = combine(["A", "D", "G"], [1, 4, 7])
+    block.map { |b| block_unit(b) }
+  end
+ 
   def print
     cache_squares = squares
     board_string_thingy = "╔═══════════╦═══════════╦═══════════╗\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n╠═══════════╬═══════════╬═══════════╣\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n╠═══════════╬═══════════╬═══════════╣\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n║           ║           ║           ║\n║ 0   0   0 ║ 0   0   0 ║ 0   0   0 ║\n╚═══════════╩═══════════╩═══════════╝"

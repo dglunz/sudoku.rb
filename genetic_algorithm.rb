@@ -14,8 +14,8 @@ module GeneticAlgorithm
       @population_size = initial_population_size
       @max_generation = generations
       @generation = 0
+      @local_minima = 0
     end
-
     #     1. Choose initial population
     #     2. Evaluate the fitness of each individual in the population
     #     3. Repeat
@@ -53,7 +53,7 @@ module GeneticAlgorithm
     #
     # Sudoku is using a binary tournament selection to choose breeders
     def selection
-      possible_parents = @population_size
+      possible_parents = @population_size 
       breeders = []
       possible_parents.times do
         breeders << tournament_selection(@population, possible_parents)
@@ -67,7 +67,7 @@ module GeneticAlgorithm
     # against one another and the top survivors are selected to become breeders
     def tournament_selection(pop, possible_parents)
       best = nil
-      (possible_parents/40).times do
+      (possible_parents/50).times do
         contestant = pop[rand(@population_size)]
         if best == nil || contestant.fitness > best.fitness
           best = contestant
@@ -82,12 +82,14 @@ module GeneticAlgorithm
     # The reproduction will also call the Chromosome.mutate method with 
     # a random number of members of the population. 
     def reproduction(selected_to_breed)
+      mutation_rate = 0.001 * @generation 
+      mutation_rate = 0.6 if mutation_rate > 0.6
       offsprings = []
       0.upto(selected_to_breed.length-2) do |i|
-        offsprings << Chromosome.reproduce(selected_to_breed[i], selected_to_breed[i+1])
+        offsprings << Chromosome.reproduce(selected_to_breed.sample, selected_to_breed.sample)
       end
       @population.each do |individual|
-        Chromosome.mutate(individual) if rand < 0.2
+        Chromosome.mutate(individual) if rand < mutation_rate
       end
       return offsprings.flatten
     end
@@ -95,18 +97,27 @@ module GeneticAlgorithm
     # Replace worst ranked part of population with offspring
     # Use a mild form of elitism, only keep 3 of the best individuals
     def replace_worst_ranked(offsprings)
+      @top ||= 0
       size = offsprings.length-3
       pop = @population.sort_by(&:fitness).reverse
       @population = []
-      @population = pop[0..2] + offsprings[0..@population_size-4]
-      display_board
+      pop.first.fitness == @top ? @local_minima += 1 : @local_minima = 0
+      @top = pop.first.fitness
+      if @local_minima > 50
+        generate_initial_population
+      else
+        @population = pop[0..2] + offsprings[0..@population_size-4]
+      end
+      display_board(pop)
     end
 
     # A pretty display to watch one population member of every generation
-    def display_board
+    def display_board(pop)
       print "\e[2J\e[f" 
       puts "Generation: #{@generation}\nElitist survivor: #{@population.first.fitness}\n"
-      puts @population.last.grid.print
+      puts pop.last.grid.print
+      puts "Weakest chromosome: #{pop.last.fitness}\n"
+      puts "Minima: #{@local_minima}"
     end
 
     # Select the best chromosome in the population
@@ -161,8 +172,8 @@ module GeneticAlgorithm
     # There are 3 different mutation methods, that occur at varying probabilities
     def self.mutate(chromosome)
       case a = rand(10)
-      when 0..3; intelligent_swap(chromosome)
-      when 3..6; random_swap(chromosome)
+      when 0..2; intelligent_swap(chromosome)
+      when 2..5; random_swap(chromosome)
       else       random_change(chromosome) 
       end
       @fitness = nil
@@ -181,9 +192,10 @@ module GeneticAlgorithm
       from  = peers.select { |k, v| v.count > 9 }
       to    = peers.select { |k, v| v.count < 9 }
       if !from.empty? && !to.empty?
-        require 'pry'; binding.pry if from.values.sample.nil? || to.keys.nil?
         from.values.sample.sample.value = to.keys.sample
         chromosome.data = chromosome.grid.chromosome
+      else
+        random_swap(chromosome)
       end
     end
 

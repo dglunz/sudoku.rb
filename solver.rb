@@ -26,13 +26,15 @@ TEST_GRID_SOLVED = "
     695417382
 "
 
-puzzle = Grid.new(TEST_GRID)
+EASY_TEST_GRID = "
+420710003053080710006350240000593607592007080360004950681000402005248009200601035"
+puzzle = Grid.new(EASY_TEST_GRID)
 
 GeneticAlgorithm::Chromosome.puzzle(puzzle)
 
 t = Time.new
 puts "Beginning genetic search... #{t}"
-search = GeneticAlgorithm::GeneticSearch.new(100, 1000)
+search = GeneticAlgorithm::GeneticSearch.new(100, 100000)
 result = search.run
 elapsed = Time.now - t
 puts "Fitness lvl: #{result.fitness} \n #{result.data} \n Time Elapsed: #{elapsed}"
