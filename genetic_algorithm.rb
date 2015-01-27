@@ -67,7 +67,7 @@ module GeneticAlgorithm
     # against one another and the top survivors are selected to become breeders
     def tournament_selection(pop, possible_parents)
       best = nil
-      (possible_parents/50).times do
+      (possible_parents/35).times do
         contestant = pop[rand(@population_size)]
         if best == nil || contestant.fitness > best.fitness
           best = contestant
@@ -83,7 +83,7 @@ module GeneticAlgorithm
     # a random number of members of the population. 
     def reproduction(selected_to_breed)
       mutation_rate = 0.001 * @generation 
-      mutation_rate = 0.6 if mutation_rate > 0.6
+      mutation_rate = 0.5 if mutation_rate > 0.5
       offsprings = []
       0.upto(selected_to_breed.length-2) do |i|
         offsprings << Chromosome.reproduce(selected_to_breed.sample, selected_to_breed.sample)
@@ -101,13 +101,9 @@ module GeneticAlgorithm
       size = offsprings.length-3
       pop = @population.sort_by(&:fitness).reverse
       @population = []
-      pop.first.fitness == @top ? @local_minima += 1 : @local_minima = 0
+      @top == pop.first.fitness ? @local_minima += 1 : @local_minima = 0
       @top = pop.first.fitness
-      if @local_minima > 50
-        generate_initial_population
-      else
-        @population = pop[0..2] + offsprings[0..@population_size-4]
-      end
+      @population = pop[0..2] + offsprings[0..@population_size-4]
       display_board(pop)
     end
 
@@ -117,7 +113,7 @@ module GeneticAlgorithm
       puts "Generation: #{@generation}\nElitist survivor: #{@population.first.fitness}\n"
       puts pop.last.grid.print
       puts "Weakest chromosome: #{pop.last.fitness}\n"
-      puts "Minima: #{@local_minima}"
+      puts "Last Advancement: #{@local_minima}"
     end
 
     # Select the best chromosome in the population

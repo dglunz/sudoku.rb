@@ -34,7 +34,7 @@ GeneticAlgorithm::Chromosome.puzzle(puzzle)
 
 t = Time.new
 puts "Beginning genetic search... #{t}"
-search = GeneticAlgorithm::GeneticSearch.new(100, 100000)
+search = GeneticAlgorithm::GeneticSearch.new(100, 1000000)
 result = search.run
 elapsed = Time.now - t
 puts "Fitness lvl: #{result.fitness} \n #{result.data} \n Time Elapsed: #{elapsed}"
