@@ -28,12 +28,14 @@ TEST_GRID_SOLVED = "
 
 EASY_TEST_GRID = "
 420710003053080710006350240000593607592007080360004950681000402005248009200601035"
+
 puzzle = Grid.new(EASY_TEST_GRID)
 
 GeneticAlgorithm::Chromosome.puzzle(puzzle)
 
 t = Time.new
 puts "Beginning genetic search... #{t}"
+# GeneticSearch takes a population size and generation limit
 search = GeneticAlgorithm::GeneticSearch.new(100, 1000000)
 result = search.run
 elapsed = Time.now - t
